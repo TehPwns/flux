@@ -9,9 +9,7 @@ Version 0.6
 
 Big Fixes:
  * Fixed the sine tween being incorrect (Missing minus sign)
- 
  * Correctly initialized tween before start when using "after"
- 
  * Tween correctly takes delay into account when using "after"
 
 This port of flux is incomplete. Most of the features are available, including:
