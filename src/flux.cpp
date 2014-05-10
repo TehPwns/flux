@@ -11,11 +11,11 @@
  subject to the following restrictions:
 
  1. The origin of this software must not be misrepresented; you must not claim that
- you wrote the original software. If you use this software in a product, an
- acknowledgment in the product documentation would be appreciated but is not required.
+	you wrote the original software. If you use this software in a product, an
+	acknowledgment in the product documentation would be appreciated but is not required.
 
  2. Altered source versions must be plainly marked as such, and must not be misrepresented as
- being the original software.
+	being the original software.
 
  3. This notice may not be removed or altered from any source distribution.
 
@@ -24,6 +24,8 @@
 #ifndef FLUX_CPP_CPP
 #define FLUX_CPP_CPP
 
+#include <utility>
+#include <iostream>
 #include "flux.hpp"
 
 namespace flux
@@ -50,7 +52,7 @@ namespace flux
 		return pow(2, 10*(t - 1));
 	}
 	static double TweenFunc_Sine(double t) {
-		return cos(t * (M_PI_2)) + 1;
+		return -cos(t * (M_PI_2)) + 1;
 	}
 	static double TweenFunc_Circ(double t) {
 		return -sqrt(1 - (t * t)) + 1;
@@ -109,6 +111,24 @@ namespace flux
 
 	/********************************************************************/
 
+    template<typename T>
+    void tween<T>::initialize()
+    {
+        //Initilize the tween.
+        vars.reserve(my_initPtrs.size());
+        auto it_p = my_initPtrs.begin();
+        auto it_v = my_initVals.begin();
+
+        for(; it_p != my_initPtrs.end(); ++it_p, ++it_v)
+        {
+            T start = *(*it_p); //Dereferencing original pointer to tweened variable
+            T end   = *it_v;
+            T diff  = end - start;
+
+            vars.emplace_back(start, diff, *it_p);
+        }
+    }
+
 	template<typename T>
 	tween<T>& tween<T>::ease(easing type)
 	{
@@ -156,25 +176,25 @@ namespace flux
 		return *this;
 	}
 
-	template<typename T>
-	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
-	{
-		return after(seconds, {ptr}, {val});
-	}
+//	template<typename T>
+//	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
+//	{
+//		return after(seconds, {ptrs}, {vals});
+//	}
 
 	template<typename T>
 	tween<T>& tween<T>::after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
 	{
-		return to(seconds, ptrs, vals).delay((this->rate != 0) ? (1 / this->rate) : 0);
+		return to(seconds, ptrs, vals).delay(start_delay + ((this->rate != 0) ? (1 / this->rate) : 0));
 	}
 
 	/********************************************************************/
 
-	template<typename T>
-	tween<T>& to(float seconds, T* ptr, T val)
-	{
-		return to(seconds, {ptr}, {val});
-	}
+//	template<typename T>
+//	tween<T>& to(float seconds, T* ptr, T val)
+//	{
+//		return to(seconds, {ptr}, {val});
+//	}
 
 	template<typename T>
 	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
@@ -183,26 +203,13 @@ namespace flux
 
 		//Tween initilization. The tween's "constructor" outside of the class.
 		tween<T> New;
-		New.is_finished = false;
+		New.inited = false;
 		New.rate  = (seconds > 0) ? (1 / seconds) : 0;
 		New.time  = (New.rate > 0) ? 0 : 1;
 		New.start_delay = 0;
 		New.easeFuncIndex = New.modFuncIndex  = 1; //Quadout is default tween
-
-
-		//Initalize time variables in "vars." This covers the tween:init() in Flux.
-		New.vars.reserve(ptrs.size());
-		auto it_p = ptrs.begin();
-		auto it_v = vals.begin();
-
-		for(; it_p != ptrs.end(); ++it_p, ++it_v)
-		{
-			T start = *(*it_p); //Dereferencing original pointer to tweened variable
-			T end   = *it_v;
-			T diff  = end - start;
-
-			New.vars.emplace_back(start, diff, *it_p);
-		}
+		New.my_initPtrs = ptrs;
+		New.my_initVals = vals;
 
 		tween<T>::tweens.push_back(New);
 		return tween<T>::tweens.back();
@@ -220,21 +227,23 @@ namespace flux
 				continue;
 			}
 
-			if(!t.callbacks_onstart.empty()) {
+			if(t.inited == false) {
+			    t.inited = true;
+			    t.initialize();
+
 				for(callbackFn& fn : t.callbacks_onstart) fn();
 				t.callbacks_onstart.clear();
 			}
 
 			t.time = t.time + (t.rate * deltaTime);
 			double p = t.time;
-			double x = (p >= 1) ? 1 :
-			modifyTable[t.modFuncIndex](easingTable[t.easeFuncIndex], p);
+			double x = (p >= 1) ? 1 : modifyTable[t.modFuncIndex](easingTable[t.easeFuncIndex], p);
 
 			for(auto& var : t.vars)
 				*(var.variable) = var.start + (x * var.diff);
 
 			if(!t.callbacks_onupdate.empty())
-			for(callbackFn& fn : t.callbacks_onupdate) fn();
+                for(callbackFn& fn : t.callbacks_onupdate) fn();
 
 			if(p >= 1) {
 				if(!t.callbacks_oncomplete.empty())
