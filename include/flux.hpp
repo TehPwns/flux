@@ -19,7 +19,7 @@ being the original software.
 
 3. This notice may not be removed or altered from any source distribution.
 
-contact: p00n3dj002@yahoo.com
+contact: omgtehpwns@yahoo.com
 */
 #ifndef FLUX_CPP_H
 #define FLUX_CPP_H
@@ -32,22 +32,22 @@ contact: p00n3dj002@yahoo.com
 #include <math.h>
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
-#define M_PI_2 1.57079632679489661923
+ #define M_PI    3.14159265358979323846
+ #define M_PI_2  1.57079632679489661923
 #endif
 
 namespace flux
 {
     enum easing {
         linear = 0,
-        quadin = 10, quadout, quadinout,
-        cubicin = 20, cubicout, cubicinout,
-        quartin = 30, quartout, quartinout,
-        quintin = 40, quintout, quintinout,
-        expoin = 50, expoout, expoinout,
-        sinein = 60, sineout, sineinout,
-        circin = 70, circout, circinout,
-        backin = 80, backout, backinout,
+        quadin = 10,   quadout,   quadinout,
+        cubicin = 20,  cubicout,  cubicinout,
+        quartin = 30,  quartout,  quartinout,
+        quintin = 40,  quintout,  quintinout,
+        expoin = 50,   expoout,   expoinout,
+        sinein = 60,   sineout,   sineinout,
+        circin = 70,   circout,   circinout,
+        backin = 80,   backout,   backinout,
         elasticin = 90,elasticout,elasticinout
     };
 
@@ -56,7 +56,7 @@ namespace flux
     template<typename T> class tween;
 
 
-    template<typename T> tween<T>& to(float seconds, T* ptr, T val);
+   //template<typename T> tween<T>& to(float seconds, T* ptr, T val);
     template<typename T> tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
     template<typename T> void update(double deltaTime);
 
@@ -70,10 +70,12 @@ namespace flux
         tween<T>& onupdate(void (*fn)(void));
         tween<T>& oncomplete(void (*fn)(void));
         tween<T>& delay(float sec);
-        tween<T>& after(float seconds, T* ptr, T val);
         tween<T>& after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+        //tween<T>& after(float seconds, T* ptr, T val);
 
     private:
+        void initialize();
+
         struct var_info {
             var_info(float s, float d, T* var) : start(s), diff(d), variable(var) {}
             float start;
@@ -81,22 +83,24 @@ namespace flux
             T* variable;
         };
 
-        static std::list<tween<T>> tweens;
-        bool is_finished;
-        double time;
-        float rate;
-        float start_delay;
-        float start;
-        float diff;
-        short easeFuncIndex;
-        short modFuncIndex;
+        static  std::list<tween<T>> tweens;
+        bool    inited;
+        double 	time;
+        float 	rate;
+        float 	start_delay;
+        float   start;
+        float 	diff;
+        short 	easeFuncIndex;
+        short 	modFuncIndex;
 
         std::vector<var_info> vars;
         std::forward_list<callbackFn> callbacks_onstart;
         std::forward_list<callbackFn> callbacks_onupdate;
         std::forward_list<callbackFn> callbacks_oncomplete;
+        std::initializer_list<T*> my_initPtrs;
+        std::initializer_list<T>  my_initVals;
 
-        friend tween<T>& to<T>(float seconds, T* ptr, T val);
+        //friend tween<T>& to<T>(float seconds, T* ptr, T val);
         friend tween<T>& to<T>(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
         friend void update<T>(double deltaTime);
     };
