@@ -111,23 +111,23 @@ namespace flux
 
 	/********************************************************************/
 
-    template<typename T>
-    void tween<T>::initialize()
-    {
-        //Initilize the tween.
-        vars.reserve(my_initPtrs.size());
-        auto it_p = my_initPtrs.begin();
-        auto it_v = my_initVals.begin();
+	template<typename T>
+	void tween<T>::initialize()
+	{
+		//Initilize the tween.
+		vars.reserve(my_initPtrs.size());
+		auto it_p = my_initPtrs.begin();
+		auto it_v = my_initVals.begin();
 
-        for(; it_p != my_initPtrs.end(); ++it_p, ++it_v)
-        {
-            T start = *(*it_p); //Dereferencing original pointer to tweened variable
-            T end   = *it_v;
-            T diff  = end - start;
+		for(; it_p != my_initPtrs.end(); ++it_p, ++it_v)
+		{
+			T start = *(*it_p); //Dereferencing original pointer to tweened variable
+			T end   = *it_v;
+			T diff  = end - start;
 
-            vars.emplace_back(start, diff, *it_p);
-        }
-    }
+			vars.emplace_back(start, diff, *it_p);
+		}
+	}
 
 	template<typename T>
 	tween<T>& tween<T>::ease(easing type)
@@ -243,11 +243,11 @@ namespace flux
 				*(var.variable) = var.start + (x * var.diff);
 
 			if(!t.callbacks_onupdate.empty())
-                for(callbackFn& fn : t.callbacks_onupdate) fn();
+				for(callbackFn& fn : t.callbacks_onupdate) fn();
 
 			if(p >= 1) {
 				if(!t.callbacks_oncomplete.empty())
-				for(callbackFn& fn : t.callbacks_oncomplete) fn();
+					for(callbackFn& fn : t.callbacks_oncomplete) fn();
 
 				auto remove_item = it; it++;
 				tween<T>::tweens.erase(remove_item);
