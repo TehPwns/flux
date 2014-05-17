@@ -150,7 +150,7 @@ namespace impl
 		if(it != impl::stringToEasingMap.end())
 			return ease(it->second);
 		else {
-			return ease(easing::quadout);	 // Invalid input string - return default?
+			return ease(easing::quadout);	// Invalid input string - return default?
 		}
 	}
 
