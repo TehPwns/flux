@@ -52,10 +52,10 @@ namespace flux
 
     /********************************************************************/
     typedef void (*callbackFn)(void);
+
     template<typename T> class tween;
     template<typename T> tween<T>& to(float seconds, T* ptr, T val);
     template<typename T> tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
-    template<typename T> auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}));
     template<typename T> void update(double deltaTime);
 
     template<typename T = double> class tween
@@ -96,7 +96,6 @@ namespace flux
 
         friend tween<T>& to<T>(float seconds, T* ptr, T val);
         friend tween<T>& to<T>(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
-        friend auto to<T>(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}));
         friend void update<T>(double deltaTime);
     };
 
