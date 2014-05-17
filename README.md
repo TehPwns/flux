@@ -24,15 +24,17 @@ How to use
 
 ###Initializing a tween
 All functions and classes reside in the `flux` namespace.
-A tween is created using the `flux::to` function. Currently there is one version:
+A tween is created using the `flux::to` function. Currently there are two  versions:
 ```c
 to<T>(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+to<T>(float seconds, T* ptr, T val);
 ```
 Where `T` is the type of the variable to be tweened.
 
 * `seconds` is the amount of time the tween will last.
 * `ptrs` is a {list}  of pointers to the values to be tweened.
 * `vals` is a {list} corresponding to the values to tween each pointer to (the ending value).
+* For the first version, only one variable is specified instead of a list.
 
 The initializer_list versions allow multiple variables to be tweened to multiple values.
 
@@ -40,9 +42,10 @@ An example creation of a tween using the `to`:
 ```c++
 double value1=0, value2=0, value3=0;
 flux::to<double>(5, {&value1, &value2, &value3}, {200.0, 400.0, 600.0});
+flux::to<double>(5, &value1, 300);
 ```
 
-This creates three simultaneous tweens for value1 to 200, value2 to 400, and value3 to 600.
+The first version creates three simultaneous tweens for value1 to 200, value2 to 400, and value3 to 600. The second only creates one tween for value1.
 
 By default, the easing function is `quadout`
 
@@ -63,7 +66,7 @@ flux.to(t, 4, { x = 10 }):ease("linear"):delay(1)
 ```
 *C++:*
 ```c++
-flux::to<double>(4, {&t.x}, {10.0}).ease("linear").delay(1)
+flux::to<double>(4, &t.x, 10.0).ease("linear").delay(1)
 ```
 The available `ease` options are as follows, as per original [documentation](https://github.com/rxi/flux):
 
