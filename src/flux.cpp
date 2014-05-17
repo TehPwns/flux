@@ -25,10 +25,15 @@
 #define FLUX_CPP_CPP
 
 #include <utility>
+#include <type_traits>
+#include <unordered_map>
 #include <iostream>
+#include <stdlib.h>
 #include "flux.hpp"
 
 namespace flux
+{
+namespace impl
 {
 	typedef double (*TweenFunc)(double t);
 	typedef double (*TweenModidyFunc)(TweenFunc& fn, double t);
@@ -96,7 +101,7 @@ namespace flux
 
 	/********************************************************************/
 
-	static std::map<const char*, easing> stringToEasingMap = {
+	static std::unordered_map<const char*, easing> stringToEasingMap = {
 		{"linear", easing::linear},
 		{"quadin", easing::quadin},  {"quadout", easing::quadout},  {"quadinout", easing::quadinout},
 		{"cubicin", easing::cubicin},{"cubicout", easing::cubicout},{"cubicinout", easing::cubicinout},
@@ -108,13 +113,14 @@ namespace flux
 		{"backin", easing::backin},  {"backout", easing::backout},  {"backinout", easing::backinout},
 		{"elasticin", easing::elasticin}, {"elasticout", easing::elasticout}, {"elasticinout", easing::elasticinout}
 	};
+} //namespace impl
 
 	/********************************************************************/
 
 	template<typename T>
 	void tween<T>::initialize()
 	{
-		//Initilize the tween.
+		//Initialize the tween.
 		vars.reserve(my_initPtrs.size());
 		auto it_p = my_initPtrs.begin();
 		auto it_v = my_initVals.begin();
@@ -140,8 +146,8 @@ namespace flux
 	template<typename T>
 	tween<T>& tween<T>::ease(const char* type)
 	{
-		auto it = stringToEasingMap.find(type);
-		if(it != stringToEasingMap.end())
+		auto it = impl::stringToEasingMap.find(type);
+		if(it != impl::stringToEasingMap.end())
 			return ease(it->second);
 		else {
 			return ease(easing::quadout);	 // Invalid input string - return default?
@@ -176,32 +182,30 @@ namespace flux
 		return *this;
 	}
 
-//	template<typename T>
-//	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
-//	{
-//		return after(seconds, {ptrs}, {vals});
-//	}
+	template<typename T>
+	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
+	{
+		return after(seconds, {ptrs}, {vals});
+	}
 
 	template<typename T>
 	tween<T>& tween<T>::after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
 	{
-		return to(seconds, ptrs, vals).delay(start_delay + ((this->rate != 0) ? (1 / this->rate) : 0));
+		return to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
 	}
 
 	/********************************************************************/
 
-//	template<typename T>
-//	tween<T>& to(float seconds, T* ptr, T val)
-//	{
-//		return to(seconds, {ptr}, {val});
-//	}
+	template<typename T>
+	tween<T>& to(float seconds, T* ptr, T val)
+	{
+		return to(seconds, {ptr}, {val});
+	}
 
 	template<typename T>
 	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
 	{
-		//if(ptrs.size() != vals.size()) return NULL;
-
-		//Tween initilization. The tween's "constructor" outside of the class.
+		//Tween initialization. The tween's "constructor" outside of the class.
 		tween<T> New;
 		New.inited = false;
 		New.rate  = (seconds > 0) ? (1 / seconds) : 0;
@@ -213,6 +217,12 @@ namespace flux
 
 		tween<T>::tweens.push_back(New);
 		return tween<T>::tweens.back();
+	}
+
+	template<typename T>
+	auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}))
+	{
+        return to(seconds, {ptr}, {val});
 	}
 
 	template<typename T>
@@ -237,7 +247,8 @@ namespace flux
 
 			t.time = t.time + (t.rate * deltaTime);
 			double p = t.time;
-			double x = (p >= 1) ? 1 : modifyTable[t.modFuncIndex](easingTable[t.easeFuncIndex], p);
+			double x = (p >= 1) ? 1 :
+			    impl::modifyTable[t.modFuncIndex](impl::easingTable[t.easeFuncIndex], p);
 
 			for(auto& var : t.vars)
 				*(var.variable) = var.start + (x * var.diff);

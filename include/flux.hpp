@@ -19,14 +19,13 @@ being the original software.
 
 3. This notice may not be removed or altered from any source distribution.
 
-contact: omgtehpwns@yahoo.com
+contact: p00n3dj002@yahoo.com
 */
 #ifndef FLUX_CPP_H
 #define FLUX_CPP_H
 
 #include <vector>
 #include <list>
-#include <map>
 #include <forward_list>
 #include <initializer_list>
 #include <math.h>
@@ -54,12 +53,10 @@ namespace flux
     /********************************************************************/
     typedef void (*callbackFn)(void);
     template<typename T> class tween;
-
-
-   //template<typename T> tween<T>& to(float seconds, T* ptr, T val);
+    template<typename T> tween<T>& to(float seconds, T* ptr, T val);
     template<typename T> tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+    template<typename T> auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}));
     template<typename T> void update(double deltaTime);
-
 
     template<typename T = double> class tween
     {
@@ -71,24 +68,21 @@ namespace flux
         tween<T>& oncomplete(void (*fn)(void));
         tween<T>& delay(float sec);
         tween<T>& after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
-        //tween<T>& after(float seconds, T* ptr, T val);
-
+        tween<T>& after(float seconds, T* ptr, T val);
     private:
         void initialize();
 
-        struct var_info {
+        struct var_info
+        {
             var_info(float s, float d, T* var) : start(s), diff(d), variable(var) {}
-            float start;
-            float diff;
+            float start, diff;
             T* variable;
         };
-
         static  std::list<tween<T>> tweens;
         bool    inited;
         double 	time;
         float 	rate;
         float 	start_delay;
-        float   start;
         float 	diff;
         short 	easeFuncIndex;
         short 	modFuncIndex;
@@ -97,16 +91,17 @@ namespace flux
         std::forward_list<callbackFn> callbacks_onstart;
         std::forward_list<callbackFn> callbacks_onupdate;
         std::forward_list<callbackFn> callbacks_oncomplete;
-        std::initializer_list<T*> my_initPtrs;
-        std::initializer_list<T>  my_initVals;
+        std::list<T*> my_initPtrs;
+        std::list<T>  my_initVals;
 
-        //friend tween<T>& to<T>(float seconds, T* ptr, T val);
+        friend tween<T>& to<T>(float seconds, T* ptr, T val);
         friend tween<T>& to<T>(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+        friend auto to<T>(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}));
         friend void update<T>(double deltaTime);
     };
 
     template<typename T> std::list<tween<T>> tween<T>::tweens = {};
-}
+} 
 
 #include "flux.cpp"
 

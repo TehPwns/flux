@@ -5,9 +5,10 @@ https://github.com/rxi/flux
 
 Functionality
 =============
+Version 0.7
+ * Corrected the single-variable functions.
+ 
 Version 0.6
-
-Big Fixes:
  * Fixed the sine tween being incorrect (Missing minus sign)
  * Correctly initialized tween before start when using "after"
  * Tween correctly takes delay into account when using "after"
