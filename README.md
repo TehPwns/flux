@@ -37,8 +37,8 @@ The initializer_list versions allow multiple variables to be tweened to multiple
 
 An example creation of a tween using the `to`:
 ```c++
-double value1, value2, value3;
-flux::to<double>(5, {&value1, &value2, &value3}, {200.0f, 400.0f, 600.0f});
+double value1=0, value2=0, value3=0;
+flux::to<double>(5, {&value1, &value2, &value3}, {200.0, 400.0, 600.0});
 ```
 
 This creates three simultaneous tweens for value1 to 200, value2 to 400, and value3 to 600.
@@ -62,7 +62,7 @@ flux.to(t, 4, { x = 10 }):ease("linear"):delay(1)
 ```
 *C++:*
 ```c++
-flux::to<double>(4, {&t.x}, {10.0f}).ease("linear").delay(1)
+flux::to<double>(4, {&t.x}, {10.0}).ease("linear").delay(1)
 ```
 The available `ease` options are as follows, as per original [documentation](https://github.com/rxi/flux):
 
