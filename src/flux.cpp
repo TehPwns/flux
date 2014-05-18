@@ -220,12 +220,6 @@ namespace impl
 	}
 
 	template<typename T>
-	auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}))
-	{
-        return to(seconds, {ptr}, {val});
-	}
-
-	template<typename T>
 	void update(double deltaTime)
 	{
 		for(auto it = tween<T>::tweens.begin(); it != tween<T>::tweens.end(); ++it)
