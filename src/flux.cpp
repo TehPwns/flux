@@ -185,7 +185,7 @@ namespace impl
 	template<typename T>
 	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
 	{
-		return after(seconds, {ptrs}, {vals});
+		return after(seconds, {ptr}, {val});
 	}
 
 	template<typename T>
