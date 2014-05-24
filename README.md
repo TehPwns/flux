@@ -21,7 +21,6 @@ This port of flux is mostly feature-complete. Most of the features are available
 * All variation of the supplied tween curves (See below)
 * All tween options, including `onstart`, `onupdate`, `oncomplete`, `delay`, and `after`
 * Tween groups
-* 
 
 
 How to use
