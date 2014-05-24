@@ -151,7 +151,7 @@ namespace impl
 		impl::TweenList<T>* getTweens();
 
 		std::map<std::type_index, impl::GenericTweenList*> mTweensLists;
-	};
+	}; 
 }
 
 #include "flux.cpp"
