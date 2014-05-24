@@ -124,21 +124,21 @@ namespace impl
 
 	/********************************************************************/
 	/** Implementation of TweenList update
-    /********************************************************************/
+	/********************************************************************/
 
-    template<typename T>
-    bool TweenList<T>::update(double deltaTime)
-    {
-        for(auto it = mTweens.begin(); it != mTweens.end(); ++it)
-        {
-            bool is_finished = it->update(deltaTime);
-            if(is_finished) {
-                auto remove_item = it; ++it;
-                mTweens.erase(remove_item);
-            }
-        }
-        return mTweens.empty();
-    }
+	template<typename T>
+	bool TweenList<T>::update(double deltaTime)
+	{
+		for(auto it = mTweens.begin(); it != mTweens.end(); ++it)
+		{
+			bool is_finished = it->update(deltaTime);
+			if(is_finished) {
+				auto remove_item = it; ++it;
+				mTweens.erase(remove_item);
+			}
+		}
+		return mTweens.empty();
+	}
 
 } //namespace impl
 
@@ -281,41 +281,41 @@ namespace impl
 		return tList->mTweens.back();
 	}
 
-    template<typename T>
-    tween<T>& flux::group::to(float seconds, T* ptr, T val)
+	template<typename T>
+	tween<T>& flux::group::to(float seconds, T* ptr, T val)
 	{
-        return to(seconds, {ptr}, {val});
+		return to(seconds, {ptr}, {val});
 	}
 
-    template<typename T>
-    impl::TweenList<T>* flux::group::getTweens()
-    {
-        if(mTweensLists.find(typeid(T)) == mTweensLists.end())
-            mTweensLists[typeid(T)] = new impl::TweenList<T>();
+	template<typename T>
+	impl::TweenList<T>* flux::group::getTweens()
+	{
+		if(mTweensLists.find(typeid(T)) == mTweensLists.end())
+			mTweensLists[typeid(T)] = new impl::TweenList<T>();
 
-        return (impl::TweenList<T>*)mTweensLists[typeid(T)];
-    }
+		return (impl::TweenList<T>*)mTweensLists[typeid(T)];
+	}
 
-    inline void flux::group::update(double deltaTime)
-    {
-        auto it = mTweensLists.begin();
+	inline void flux::group::update(double deltaTime)
+	{
+		auto it = mTweensLists.begin();
 
-        while(it != mTweensLists.end())
-        {
-            bool isTypeEmpty = it->second->update(deltaTime);
-            it++;
-            if(isTypeEmpty) {
-                auto remove_item = it;
-                     remove_item--;          //Delete node in list before it
-                delete remove_item->second;
-                this->mTweensLists.erase(remove_item);
-            }
-        }
-    }
+		while(it != mTweensLists.end())
+		{
+			bool isTypeEmpty = it->second->update(deltaTime);
+			it++;
+			if(isTypeEmpty) {
+				auto remove_item = it;
+					 remove_item--;          //Delete node in list before it
+				delete remove_item->second;
+				this->mTweensLists.erase(remove_item);
+			}
+		}
+	}
 
 	/********************************************************************/
-    /** General namespace function implementation
-    /********************************************************************/
+	/** General namespace function implementation
+	/********************************************************************/
 
 	template<typename T>
 	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
