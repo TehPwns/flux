@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2014 TehPwns
- Orignal Flux Lua library Copyright (c) 2014 rxi
+ Original Flux Lua library Copyright (c) 2014 rxi
 
  This software is provided 'as-is', without any express or implied warranty.
  In no event will the authors be held liable for any damages arising from the use
@@ -24,12 +24,14 @@
 #ifndef FLUX_CPP_CPP
 #define FLUX_CPP_CPP
 
-#include <utility>
-#include <type_traits>
 #include <unordered_map>
-#include <iostream>
-#include <stdlib.h>
+#include <math.h>
 #include "flux.hpp"
+
+#ifndef M_PI
+ #define M_PI    3.14159265358979323846
+ #define M_PI_2  1.57079632679489661923
+#endif
 
 namespace flux
 {
@@ -100,6 +102,8 @@ namespace impl
 	};
 
 	/********************************************************************/
+	/** unordered_map for string-easing translation
+	/********************************************************************/
 
 	static std::unordered_map<const char*, easing> stringToEasingMap = {
 		{"linear", easing::linear},
@@ -113,9 +117,34 @@ namespace impl
 		{"backin", easing::backin},  {"backout", easing::backout},  {"backinout", easing::backinout},
 		{"elasticin", easing::elasticin}, {"elasticout", easing::elasticout}, {"elasticinout", easing::elasticinout}
 	};
-} //namespace impl
+
+	//Internal tweens held by the flux namespace
+	static flux::group internalGroup;
+
 
 	/********************************************************************/
+	/** Implementation of TweenList update
+    /********************************************************************/
+
+    template<typename T>
+    bool TweenList<T>::update(double deltaTime)
+    {
+        for(auto it = mTweens.begin(); it != mTweens.end(); ++it)
+        {
+            bool is_finished = it->update(deltaTime);
+            if(is_finished) {
+                auto remove_item = it; ++it;
+                mTweens.erase(remove_item);
+            }
+        }
+        return mTweens.empty();
+    }
+
+} //namespace impl
+
+    /********************************************************************/
+    /** Tween implementation
+    /********************************************************************/
 
 	template<typename T>
 	void tween<T>::initialize()
@@ -185,7 +214,7 @@ namespace impl
 	template<typename T>
 	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
 	{
-		return after(seconds, {ptrs}, {vals});
+		return after(seconds, {ptr}, {val});
 	}
 
 	template<typename T>
@@ -194,20 +223,51 @@ namespace impl
 		return to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
 	}
 
-	/********************************************************************/
-
 	template<typename T>
-	tween<T>& to(float seconds, T* ptr, T val)
+	bool tween<T>::update(double deltaTime)
 	{
-		return to(seconds, {ptr}, {val});
+		if(start_delay > 0) {
+			start_delay -= deltaTime;
+		} else {
+			if(inited == false) {
+				inited = true;
+				initialize();
+
+				for(callbackFn& fn : callbacks_onstart) fn();
+				callbacks_onstart.clear();
+			}
+
+			time = time + (rate * deltaTime);
+
+			double p = time;
+			double x = (p >= 1) ? 1 :
+				impl::modifyTable[modFuncIndex](impl::easingTable[easeFuncIndex], p);
+
+			for(auto& var : vars)
+				*(var.variable) = var.start + (x * var.diff);
+
+			for(callbackFn& fn : callbacks_onupdate) fn();
+
+			if(p >= 1) {
+				for(callbackFn& fn : callbacks_oncomplete) fn();
+				finished = true;
+			}
+		}
+
+		return finished;
 	}
 
+    /********************************************************************/
+    /** flux::group implementation
+    /********************************************************************/
+
 	template<typename T>
-	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
+	tween<T>& flux::group::to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
 	{
 		//Tween initialization. The tween's "constructor" outside of the class.
 		tween<T> New;
 		New.inited = false;
+		New.finished = false;
 		New.rate  = (seconds > 0) ? (1 / seconds) : 0;
 		New.time  = (New.rate > 0) ? 0 : 1;
 		New.start_delay = 0;
@@ -215,8 +275,52 @@ namespace impl
 		New.my_initPtrs = ptrs;
 		New.my_initVals = vals;
 
-		tween<T>::tweens.push_back(New);
-		return tween<T>::tweens.back();
+		auto tList = this->getTweens<T>();
+		tList->mTweens.push_back(New);
+
+		return tList->mTweens.back();
+	}
+
+    template<typename T>
+    tween<T>& flux::group::to(float seconds, T* ptr, T val)
+	{
+        return to(seconds, {ptr}, {val});
+	}
+
+    template<typename T>
+    impl::TweenList<T>* flux::group::getTweens()
+    {
+        if(mTweensLists.find(typeid(T)) == mTweensLists.end())
+            mTweensLists[typeid(T)] = new impl::TweenList<T>();
+
+        return (impl::TweenList<T>*)mTweensLists[typeid(T)];
+    }
+
+    inline void flux::group::update(double deltaTime)
+    {
+        auto it = mTweensLists.begin();
+
+        while(it != mTweensLists.end())
+        {
+            bool isTypeEmpty = it->second->update(deltaTime);
+            it++;
+            if(isTypeEmpty) {
+                auto remove_item = it;
+                     remove_item--;          //Delete node in list before it
+                delete remove_item->second;
+                this->mTweensLists.erase(remove_item);
+            }
+        }
+    }
+
+	/********************************************************************/
+    /** General namespace function implementation
+    /********************************************************************/
+
+	template<typename T>
+	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
+	{
+        return impl::internalGroup.to(seconds, ptrs, vals);
 	}
 
 	template<typename T>
@@ -225,46 +329,11 @@ namespace impl
         return to(seconds, {ptr}, {val});
 	}
 
-	template<typename T>
-	void update(double deltaTime)
+	inline void update(double deltaTime)
 	{
-		for(auto it = tween<T>::tweens.begin(); it != tween<T>::tweens.end(); ++it)
-		{
-			auto& t = *it;
-
-			if(t.start_delay > 0) {
-				t.start_delay -= deltaTime;
-				continue;
-			}
-
-			if(t.inited == false) {
-			    t.inited = true;
-			    t.initialize();
-
-				for(callbackFn& fn : t.callbacks_onstart) fn();
-				t.callbacks_onstart.clear();
-			}
-
-			t.time = t.time + (t.rate * deltaTime);
-			double p = t.time;
-			double x = (p >= 1) ? 1 :
-			    impl::modifyTable[t.modFuncIndex](impl::easingTable[t.easeFuncIndex], p);
-
-			for(auto& var : t.vars)
-				*(var.variable) = var.start + (x * var.diff);
-
-			if(!t.callbacks_onupdate.empty())
-				for(callbackFn& fn : t.callbacks_onupdate) fn();
-
-			if(p >= 1) {
-				if(!t.callbacks_oncomplete.empty())
-					for(callbackFn& fn : t.callbacks_oncomplete) fn();
-
-				auto remove_item = it; it++;
-				tween<T>::tweens.erase(remove_item);
-			}
-		}
+		impl::internalGroup.update(deltaTime);
 	}
-}
+
+}	//namespace flux
 
 #endif
