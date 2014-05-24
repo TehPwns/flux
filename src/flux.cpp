@@ -102,7 +102,7 @@ namespace impl
 	};
 
 	/********************************************************************/
-	/** unordered_map for string-easing translation
+	/** unordered_map for string-easing translation **/
 	/********************************************************************/
 
 	static std::unordered_map<const char*, easing> stringToEasingMap = {
@@ -123,7 +123,7 @@ namespace impl
 
 
 	/********************************************************************/
-	/** Implementation of TweenList update
+	/** Implementation of TweenList update **/
 	/********************************************************************/
 
 	template<typename T>
@@ -143,7 +143,7 @@ namespace impl
 } //namespace impl
 
 	/********************************************************************/
-	/** Tween implementation
+	/** Tween implementation **/
 	/********************************************************************/
 
 	template<typename T>
@@ -258,7 +258,7 @@ namespace impl
 	}
 
 	/********************************************************************/
-	/** flux::group implementation
+	/** flux::group implementation **/
 	/********************************************************************/
 
 	template<typename T>
@@ -314,7 +314,7 @@ namespace impl
 	}
 
 	/********************************************************************/
-	/** General namespace function implementation
+	/** General namespace function implementation **/
 	/********************************************************************/
 
 	template<typename T>
