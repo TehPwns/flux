@@ -5,6 +5,10 @@ https://github.com/rxi/flux
 
 Functionality
 =============
+Version 1.0
+ * Arrival of generalized `update` and `to` functions
+ * Implemented tween groups
+
 Version 0.7
  * Corrected the single-variable functions.
  
@@ -13,9 +17,11 @@ Version 0.6
  * Correctly initialized tween before start when using "after"
  * Tween correctly takes delay into account when using "after"
 
-This port of flux is incomplete. Most of the features are available, including:
+This port of flux is mostly feature-complete. Most of the features are available, including:
 * All variation of the supplied tween curves (See below)
 * All tween options, including `onstart`, `onupdate`, `oncomplete`, `delay`, and `after`
+* Tween groups
+* 
 
 
 How to use
@@ -26,10 +32,10 @@ How to use
 All functions and classes reside in the `flux` namespace.
 A tween is created using the `flux::to` function. Currently there are two  versions:
 ```c
-to<T>(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
-to<T>(float seconds, T* ptr, T val);
+to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+to(float seconds, T* ptr, T val);
 ```
-Where `T` is the type of the variable to be tweened.
+Where `T` is the type of the variable to be tweened. You do not need template arguments on the `to` functions as of 1.0.
 
 * `seconds` is the amount of time the tween will last.
 * `ptrs` is a {list}  of pointers to the values to be tweened.
@@ -38,11 +44,11 @@ Where `T` is the type of the variable to be tweened.
 
 The initializer_list versions allow multiple variables to be tweened to multiple values.
 
-An example creation of a tween using the `to`:
+An example creation of some tweens using `to`:
 ```c++
 double value1=0, value2=0, value3=0;
-flux::to<double>(5, {&value1, &value2, &value3}, {200.0, 400.0, 600.0});
-flux::to<double>(5, &value1, 300);
+flux::to(5, {&value1, &value2, &value3}, {200.0, 400.0, 600.0});
+flux::to(5, &value1, 300);
 ```
 
 The first version creates three simultaneous tweens for value1 to 200, value2 to 400, and value3 to 600. The second only creates one tween for value1.
@@ -50,10 +56,9 @@ The first version creates three simultaneous tweens for value1 to 200, value2 to
 By default, the easing function is `quadout`
 
 ###Updating Tweens
-Currently, flux::update<T>(double deltaTime) must be called seperately for each type that is being tweened. For example, if you have `float` and `double` tweens, update<float> and update<double> need to be called seperately. All updates should be called once per main loop. `deltaTime` is the time in *seconds* since last call to the function (in other words, since last frame).
+To update all tweens held by the flux namespace, make a single call to `flux::update(float dt)`. This will now update all current tweens.
 ```c++
-flux::update<double>(myDeltaTime);
-flux::update<float>(myDeltaTime);
+flux::update(myDeltaTime);
 ```
 
 
@@ -66,7 +71,7 @@ flux.to(t, 4, { x = 10 }):ease("linear"):delay(1)
 ```
 *C++:*
 ```c++
-flux::to<double>(4, &t.x, 10.0).ease("linear").delay(1)
+flux::to(4, &t.x, 10.0).ease("linear").delay(1)
 ```
 The available `ease` options are as follows, as per original [documentation](https://github.com/rxi/flux):
 
@@ -80,6 +85,20 @@ The available `ease` options are as follows, as per original [documentation](htt
   `circin`       `circout`       `circinout`
   `backin`       `backout`       `backinout`
   `elasticin`    `elasticout`    `elasticinout`
+  
+###Tween groups
+Flux allows tween objects seperate from the flux namespace called groups. Groups contain their own tweens and must have their own `update` and `to` methods called seperately. Groups are useful to single out and own a set of tweens that may not be updated with the main flux namesapce.
+
+As with the flux namespace, `to` returns a reference to a chainable tween object, and all other settings apply.
+
+Usage of groups:
+```c++
+flux::group MyGroup = flux::group();	//flux::group MyGroup();
+MyGroup.to(...);
+MyGroup.to(...);
+...
+MyGroup.update(dt);
+```
 
 
 
