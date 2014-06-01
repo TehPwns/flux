@@ -5,6 +5,10 @@ https://github.com/rxi/flux
 
 Functionality
 =============
+Version 1.1
+ * Implemented tween::stop() 
+ * scoped flux::easing enum
+ 
 Version 1.0
  * Arrival of generalized `update` and `to` functions
  * Implemented tween groups
@@ -16,12 +20,6 @@ Version 0.6
  * Fixed the sine tween being incorrect (Missing minus sign)
  * Correctly initialized tween before start when using "after"
  * Tween correctly takes delay into account when using "after"
-
-This port of flux is mostly feature-complete. Most of the features are available, including:
-* All variation of the supplied tween curves (See below)
-* All tween options, including `onstart`, `onupdate`, `oncomplete`, `delay`, and `after`
-* Tween groups
-* 
 
 
 How to use
@@ -56,14 +54,36 @@ The first version creates three simultaneous tweens for value1 to 200, value2 to
 By default, the easing function is `quadout`
 
 ###Updating Tweens
-To update all tweens held by the flux namespace, make a single call to `flux::update(float dt)`. This will now update all current tweens.
+To update all tweens held by the flux namespace, make a single call to `flux::update(float dt)`, with the time since the last frame in seconds. This will now update all current tweens.
 ```c++
 flux::update(myDeltaTime);
 ```
 
 
 ###Setting Options
-Either one of the `to` functions return a reference to the new tween object. Additional options can be set by using the `.` operator on the object `to` returns. All of these options chain. These options have the same functionality as the original flux options. Here are some example of Lua and C++ correspondents.
+Either one of the `to` functions return a reference to the new tween object. Additional options can be set by using the `.` operator on the object `to` returns. All of these options chain. These options have the same functionality as the original flux options.
+
+`ease(const char* type)` `ease(flux::easing type)`: Sets the easing curve for the set of tweens being defined.
+
+`after(...)`: Register a tween to take place after the previous one finishes. All options after this apply to the new tween. This option uses the same syntax as `to`.
+
+`onstart(callbackFn)`: Add a function to be called when the tween starts. Call more than once to add multiple functions.
+
+`onupdate(callbackFn)`: Add functions to be called each time the tween updates
+
+`oncomplete(callbackFn)`: Add functions to be called when the tween completes.
+
+`delay(float sec)`: Do not start the tween immediately; delay for this amount of time
+
+`stop(void)`: Immediately stops a tween. The `oncomplete` functions are not called. To use this function, keep a reference to the tween created from `to`.
+
+```c++
+auto myTween = flux::to(...).ease(...).oncomplete(myfunction);
+...
+myTween.stop();  //Tween stopped and myfunction not called
+```
+
+An example of Lua and C++ correspondents:
 
 *Lua:*
 ```lua
@@ -87,19 +107,15 @@ The available `ease` options are as follows, as per original [documentation](htt
   `elasticin`    `elasticout`    `elasticinout`
   
 ###Tween groups
-Flux allows tween objects seperate from the flux namespace called groups. Groups contain their own tweens and must have their own `update` and `to` methods called seperately. Groups are useful to single out and own a set of tweens that may not be updated with the main flux namesapce.
+Flux allows tween objects separate from the flux namespace called groups. Groups contain their own tweens and must have their own `update` and `to` methods called separately. Groups are useful to single out and own a set of tweens that may not be updated with the main flux namesapce.
 
 As with the flux namespace, `to` returns a reference to a chainable tween object, and all other settings apply.
 
 Usage of groups:
 ```c++
-flux::group MyGroup = flux::group();	//flux::group MyGroup();
+flux::group MyGroup = flux::group();	//flux::group MyGroup;
 MyGroup.to(...);
 MyGroup.to(...);
 ...
 MyGroup.update(dt);
 ```
-
-
-
-
