@@ -24,7 +24,7 @@ Version 0.6
 
 How to use
 ==========
-`flux.h` and `flux.cpp` should both be added to your project's directory, in the same folder. Then add flux.cpp to your build options or command line. Then #include "flux.hpp"
+`flux.hpp` and `flux.cpp` should both be added to your project's directory, in the same folder. Then add flux.cpp to your build options or command line. Then #include "flux.hpp"
 
 ###Initializing a tween
 All functions and classes reside in the `flux` namespace.
