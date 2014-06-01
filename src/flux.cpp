@@ -11,11 +11,11 @@
  subject to the following restrictions:
 
  1. The origin of this software must not be misrepresented; you must not claim that
-    you wrote the original software. If you use this software in a product, an
-    acknowledgment in the product documentation would be appreciated but is not required.
+	you wrote the original software. If you use this software in a product, an
+	acknowledgment in the product documentation would be appreciated but is not required.
 
  2. Altered source versions must be plainly marked as such, and must not be misrepresented as
-    being the original software.
+	being the original software.
 
  3. This notice may not be removed or altered from any source distribution.
 
@@ -26,6 +26,7 @@
 
 #include <unordered_map>
 #include <math.h>
+#include <algorithm>
 #include "flux.hpp"
 
 #ifndef M_PI
@@ -102,10 +103,10 @@ namespace impl
 	};
 
 	/********************************************************************/
-	/** unordered_map for string-easing translation
+	/** unordered_map for string-easing translation **/
 	/********************************************************************/
 
-	static std::unordered_map<const char*, easing> stringToEasingMap = {
+	static const std::unordered_map<const char*, easing> stringToEasingMap = {
 		{"linear", easing::linear},
 		{"quadin", easing::quadin},  {"quadout", easing::quadout},  {"quadinout", easing::quadinout},
 		{"cubicin", easing::cubicin},{"cubicout", easing::cubicout},{"cubicinout", easing::cubicinout},
@@ -123,28 +124,34 @@ namespace impl
 
 
 	/********************************************************************/
-	/** Implementation of TweenList update
-    /********************************************************************/
+	/** Implementation of TweenList update **/
+	/********************************************************************/
 
-    template<typename T>
-    bool TweenList<T>::update(double deltaTime)
-    {
-        for(auto it = mTweens.begin(); it != mTweens.end(); ++it)
-        {
-            bool is_finished = it->update(deltaTime);
-            if(is_finished) {
-                auto remove_item = it; ++it;
-                mTweens.erase(remove_item);
-            }
-        }
-        return mTweens.empty();
-    }
+	template<typename T>
+	bool TweenList<T>::update(double deltaTime)
+	{
+		for(auto it = mTweens.begin(); it != mTweens.end(); ++it)
+		{
+			bool is_finished = it->update(deltaTime);
+			if(is_finished) {
+				auto remove_item = it; ++it;
+				mTweens.erase(remove_item);
+			}
+		}
+		return mTweens.empty();
+	}
 
 } //namespace impl
 
-    /********************************************************************/
-    /** Tween implementation
-    /********************************************************************/
+	/********************************************************************/
+	/** Tween implementation **/
+	/********************************************************************/
+
+	template<typename T>
+	tween<T>::tween()
+		: parent(nullptr)
+	{
+	}
 
 	template<typename T>
 	void tween<T>::initialize()
@@ -176,9 +183,9 @@ namespace impl
 	tween<T>& tween<T>::ease(const char* type)
 	{
 		auto it = impl::stringToEasingMap.find(type);
-		if(it != impl::stringToEasingMap.end())
+		if(it != impl::stringToEasingMap.end()) {
 			return ease(it->second);
-		else {
+		} else {
 			return ease(easing::quadout);	// Invalid input string - return default?
 		}
 	}
@@ -257,9 +264,16 @@ namespace impl
 		return finished;
 	}
 
-    /********************************************************************/
-    /** flux::group implementation
-    /********************************************************************/
+	template<typename T>
+	void tween<T>::stop(void)
+	{
+		if(this->parent != nullptr)		//Just in case for now
+			parent->removeTween<T>(this);
+	}
+
+	/********************************************************************/
+	/** flux::group implementation **/
+	/********************************************************************/
 
 	template<typename T>
 	tween<T>& flux::group::to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
@@ -271,62 +285,85 @@ namespace impl
 		New.rate  = (seconds > 0) ? (1 / seconds) : 0;
 		New.time  = (New.rate > 0) ? 0 : 1;
 		New.start_delay = 0;
-		New.easeFuncIndex = New.modFuncIndex  = 1; //Quadout is default tween
+		New.easeFuncIndex = New.modFuncIndex = 1; //Quadout is default tween
 		New.my_initPtrs = ptrs;
 		New.my_initVals = vals;
+		New.parent = this;
 
 		auto tList = this->getTweens<T>();
+
+		/* Assign some id for possible removing later.
+		 * This might give warnings on some compilers,
+		 * and honestly isn't very good.
+		 */
+		New.id = tList->mTweens.size();
+		New.id |= ((int)((void*)&New) & 0xFFFF) << 16;
+
 		tList->mTweens.push_back(New);
 
 		return tList->mTweens.back();
 	}
 
-    template<typename T>
-    tween<T>& flux::group::to(float seconds, T* ptr, T val)
+	template<typename T>
+	tween<T>& flux::group::to(float seconds, T* ptr, T val)
 	{
-        return to(seconds, {ptr}, {val});
+		return to(seconds, {ptr}, {val});
 	}
 
-    template<typename T>
-    impl::TweenList<T>* flux::group::getTweens()
-    {
-        if(mTweensLists.find(typeid(T)) == mTweensLists.end())
-            mTweensLists[typeid(T)] = new impl::TweenList<T>();
+	template<typename T>
+	impl::TweenList<T>* flux::group::getTweens()
+	{
+		if(mTweensLists.find(typeid(T)) == mTweensLists.end())
+			mTweensLists[typeid(T)] = new impl::TweenList<T>();
 
-        return (impl::TweenList<T>*)mTweensLists[typeid(T)];
-    }
+		return (impl::TweenList<T>*)mTweensLists[typeid(T)];
+	}
 
-    inline void flux::group::update(double deltaTime)
-    {
-        auto it = mTweensLists.begin();
+	inline void flux::group::update(double deltaTime)
+	{
+		auto it = mTweensLists.begin();
 
-        while(it != mTweensLists.end())
-        {
-            bool isTypeEmpty = it->second->update(deltaTime);
-            it++;
-            if(isTypeEmpty) {
-                auto remove_item = it;
-                     remove_item--;          //Delete node in list before it
-                delete remove_item->second;
-                this->mTweensLists.erase(remove_item);
-            }
-        }
-    }
+		while(it != mTweensLists.end())
+		{
+			bool isTypeEmpty = it->second->update(deltaTime);
+			it++;
+			if(isTypeEmpty) {
+				auto remove_item = it;
+					 remove_item--;          //Delete node in list before it
+				delete remove_item->second;
+				this->mTweensLists.erase(remove_item);
+			}
+		}
+	}
+
+	template<typename T>
+	void flux::group::removeTween(tween<T>* toRemove)
+	{
+		auto tList = this->getTweens<T>();
+
+		/* Linear lookup of an element in a list, but as far as I know
+		* tween::stop isn't used often.
+		*/
+		auto tweenEntry = std::find_if(tList->mTweens.begin(), tList->mTweens.end(),
+			[=](const tween<T>& tw){return tw.id == toRemove->id;});
+
+		tList->mTweens.erase(tweenEntry);
+	}
 
 	/********************************************************************/
-    /** General namespace function implementation
-    /********************************************************************/
+	/** General namespace function implementation **/
+	/********************************************************************/
 
 	template<typename T>
 	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
 	{
-        return impl::internalGroup.to(seconds, ptrs, vals);
+		return impl::internalGroup.to(seconds, ptrs, vals);
 	}
 
 	template<typename T>
 	auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}))
 	{
-        return to(seconds, {ptr}, {val});
+		return to(seconds, {ptr}, {val});
 	}
 
 	inline void update(double deltaTime)
