@@ -33,7 +33,7 @@ contact: p00n3dj002@yahoo.com
 
 namespace flux
 {
-	enum easing {
+	enum class easing : char {
 		linear = 0,
 		quadin = 10,   quadout,   quadinout,
 		cubicin = 20,  cubicout,  cubicinout,

@@ -174,8 +174,8 @@ namespace impl
 	template<typename T>
 	tween<T>& tween<T>::ease(easing type)
 	{
-		this->easeFuncIndex = type / 10; 	//Integer division
-		this->modFuncIndex = type % 10;
+		this->easeFuncIndex = (char)type / 10; 	//Integer division
+		this->modFuncIndex = (char)type % 10;
 		return *this;
 	}
 
@@ -191,21 +191,21 @@ namespace impl
 	}
 
 	template<typename T>
-	tween<T>& tween<T>::onstart(void (*fn)(void))
+	tween<T>& tween<T>::onstart(callbackFn fn)
 	{
 		callbacks_onstart.push_front(fn);
 		return *this;
 	}
 
 	template<typename T>
-	tween<T>& tween<T>::onupdate(void (*fn)(void))
+	tween<T>& tween<T>::onupdate(callbackFn fn)
 	{
 		callbacks_onupdate.push_front(fn);
 		return *this;
 	}
 
 	template<typename T>
-	tween<T>& tween<T>::oncomplete(void (*fn)(void))
+	tween<T>& tween<T>::oncomplete(callbackFn fn)
 	{
 		callbacks_oncomplete.push_front(fn);
 		return *this;
@@ -342,8 +342,8 @@ namespace impl
 		auto tList = this->getTweens<T>();
 
 		/* Linear lookup of an element in a list, but as far as I know
-		* tween::stop isn't used often.
-		*/
+		 * tween::stop isn't used often.
+		 */
 		auto tweenEntry = std::find_if(tList->mTweens.begin(), tList->mTweens.end(),
 			[=](const tween<T>& tw){return tw.id == toRemove->id;});
 
