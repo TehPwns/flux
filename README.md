@@ -61,15 +61,15 @@ flux::update(myDeltaTime);
 
 
 ###Setting Options
-Either one of the `to` functions return a reference to the new tween object. Additional options can be set by using the `.` operator on the object `to` returns. All of these options chain. These options have the same functionality as the original flux options.
+Either one of the `to` functions return a reference to the new tween object. Additional options can be set by using the `.` operator on the object `to` returns. All of these options chain. These options have the same functionality as the original flux options. *The syntax for a callbackFn is a function returning void taking no arguments.*
 
 `ease(const char* type)` `ease(flux::easing type)`: Sets the easing curve for the set of tweens being defined.
 
 `after(...)`: Register a tween to take place after the previous one finishes. All options after this apply to the new tween. This option uses the same syntax as `to`.
 
-`onstart(callbackFn)`: Add a function to be called when the tween starts. Call more than once to add multiple functions.
+`onstart(callbackFn)`: Add a function to be called when the tween starts. Call more than once to add multiple functions. See format for a *callbackFn* above.
 
-`onupdate(callbackFn)`: Add functions to be called each time the tween updates
+`onupdate(callbackFn)`: Add functions to be called each time the tween updates.
 
 `oncomplete(callbackFn)`: Add functions to be called when the tween completes.
 
