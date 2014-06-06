@@ -10,15 +10,10 @@ Version 1.2
 **More type-generic; flux now works with different types as one might expect.**
 
  * The pointer and value in `to` and `after` don't have to explicitly be the same type.
-
  * ptrs in `after` don't have to be the same type as the previous tweens
-
  * Ensured all instances of using `to` use the correct one in context of possible scope errors
-
  * Using delay after `after` correctly adds delay instead of overwriting
-
  * typedef of callbackFn changed to std::function for flexibility
-
  * Added more friendly comments
 
 
