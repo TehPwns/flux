@@ -29,6 +29,7 @@ contact: p00n3dj002@yahoo.com
 #include <map>
 #include <forward_list>
 #include <initializer_list>
+#include <functional>
 #include <typeindex>
 
 namespace flux
@@ -50,16 +51,16 @@ namespace flux
 	/** Forward declarations and general namespace functions **/
 	/********************************************************************/
 
-	typedef void (*callbackFn)(void);
+	typedef std::function<void(void)> callbackFn;
 
 	template<typename T> class tween;   //Some forward declarations
 	class group;
 
-	template<typename T>
-	inline tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+	template<typename T1, typename T2>
+	inline tween<T1>& to(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals);
 
-	template<typename T>
-	inline auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}));
+	template<typename T1, typename T2>
+	inline tween<T1>& to(float seconds, T1* ptr, T2 val);
 
 	inline void update(double deltaTime);
 
@@ -78,8 +79,13 @@ namespace flux
 		tween<T>& onupdate(callbackFn fn);
 		tween<T>& oncomplete(callbackFn fn);
 		tween<T>& delay(float sec);
-		tween<T>& after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
-		tween<T>& after(float seconds, T* ptr, T val);
+
+		template<typename T1, typename T2>
+		tween<T1>& after(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals);
+
+		template<typename T1, typename T2>
+		tween<T1>& after(float seconds, T1* ptr, T2 val);
+
 		bool update(double deltaTime);
 		void stop(void);
 
@@ -144,14 +150,14 @@ namespace impl
 	class group
 	{
 	public:
-		template<typename T>
-		tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals);
+		template<typename T1, typename T2>
+		tween<T1>& to(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals);
 
-		template<typename T>
-		tween<T>& to(float seconds, T* ptr, T val);
+		template<typename T1, typename T2>
+		tween<T1>& to(float seconds, T1* ptr, T2 val);
 
 		inline void update(double deltaTime);
-		
+
 	private:
 		template<typename T>
 		impl::TweenList<T>* getTweens();
@@ -159,13 +165,16 @@ namespace impl
 		template<typename T>
 		void removeTween(tween<T>* toRemove);
 
-		template<typename T> 
+		template<typename T>
 		friend class tween;
 
 		std::map<std::type_index, impl::GenericTweenList*> mTweensLists;
 	};
 }
 
+/* Hack to have the ability to define templates "outside"
+ * the header
+ */
 #include "flux.cpp"
 
 #endif

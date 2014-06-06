@@ -11,15 +11,15 @@
  subject to the following restrictions:
 
  1. The origin of this software must not be misrepresented; you must not claim that
-	you wrote the original software. If you use this software in a product, an
-	acknowledgment in the product documentation would be appreciated but is not required.
+    you wrote the original software. If you use this software in a product, an
+    acknowledgment in the product documentation would be appreciated but is not required.
 
  2. Altered source versions must be plainly marked as such, and must not be misrepresented as
-	being the original software.
+    being the original software.
 
  3. This notice may not be removed or altered from any source distribution.
 
- contact: p00n3dj002@yahoo.com
+contact: p00n3dj002@yahoo.com
 */
 #ifndef FLUX_CPP_CPP
 #define FLUX_CPP_CPP
@@ -112,7 +112,7 @@ namespace impl
 		{"cubicin", easing::cubicin},{"cubicout", easing::cubicout},{"cubicinout", easing::cubicinout},
 		{"quartin", easing::quartin},{"quartout", easing::quartout},{"quartinout", easing::quartinout},
 		{"quintin", easing::quintin},{"quintout", easing::quintout},{"quintinout", easing::quintinout},
-		{"expoin", easing::expoin},  {"expoout", easing::expoout}, 	{"expoinout", easing::expoinout},
+		{"expoin", easing::expoin},  {"expoout", easing::expoout},  {"expoinout", easing::expoinout},
 		{"sinein", easing::sinein},  {"sineout", easing::sineout},  {"sineinout", easing::sineinout},
 		{"circin", easing::circin},  {"circout", easing::circout},  {"circinout", easing::circinout},
 		{"backin", easing::backin},  {"backout", easing::backout},  {"backinout", easing::backinout},
@@ -148,8 +148,7 @@ namespace impl
 	/********************************************************************/
 
 	template<typename T>
-	tween<T>::tween()
-		: parent(nullptr)
+	tween<T>::tween() : parent(nullptr)
 	{
 	}
 
@@ -214,20 +213,25 @@ namespace impl
 	template<typename T>
 	tween<T>& tween<T>::delay(float sec)
 	{
-		this->start_delay = sec;
+		/* += to account for possible delay beforehand
+		 * from "after" or whatever
+		 */
+		this->start_delay += sec;
 		return *this;
 	}
 
 	template<typename T>
-	tween<T>& tween<T>::after(float seconds, T* ptr, T val)
+	template<typename T1, typename T2>
+	tween<T1>& tween<T>::after(float seconds, T1* ptr, T2 val)
 	{
-		return after(seconds, {ptr}, {val});
+		return after(seconds, {ptr}, {(T1)val});
 	}
 
 	template<typename T>
-	tween<T>& tween<T>::after(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
+	template<typename T1, typename T2>
+	tween<T1>& tween<T>::after(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals)
 	{
-		return to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
+		return parent->to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
 	}
 
 	template<typename T>
@@ -275,11 +279,12 @@ namespace impl
 	/** flux::group implementation **/
 	/********************************************************************/
 
-	template<typename T>
-	tween<T>& flux::group::to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
+	template<typename T1, typename T2>
+	tween<T1>& flux::group::to(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals)
 	{
 		//Tween initialization. The tween's "constructor" outside of the class.
-		tween<T> New;
+		tween<T1> New;
+		New.parent = this;
 		New.inited = false;
 		New.finished = false;
 		New.rate  = (seconds > 0) ? (1 / seconds) : 0;
@@ -287,10 +292,14 @@ namespace impl
 		New.start_delay = 0;
 		New.easeFuncIndex = New.modFuncIndex = 1; //Quadout is default tween
 		New.my_initPtrs = ptrs;
-		New.my_initVals = vals;
-		New.parent = this;
 
-		auto tList = this->getTweens<T>();
+		/* For now, convert each value one by one
+		 */
+		for(const T2& entry : vals)
+			New.my_initVals.push_back((T1)entry);
+
+
+		auto tList = this->getTweens<T1>();
 
 		/* Assign some id for possible removing later.
 		 * This might give warnings on some compilers,
@@ -304,10 +313,10 @@ namespace impl
 		return tList->mTweens.back();
 	}
 
-	template<typename T>
-	tween<T>& flux::group::to(float seconds, T* ptr, T val)
+	template<typename T1, typename T2>
+	tween<T1>& flux::group::to(float seconds, T1* ptr, T2 val)
 	{
-		return to(seconds, {ptr}, {val});
+		return this->to(seconds, {ptr}, {(T1)val});
 	}
 
 	template<typename T>
@@ -329,7 +338,7 @@ namespace impl
 			it++;
 			if(isTypeEmpty) {
 				auto remove_item = it;
-					 remove_item--;          //Delete node in list before it
+					--remove_item; 			//Delete node in list before it
 				delete remove_item->second;
 				this->mTweensLists.erase(remove_item);
 			}
@@ -347,23 +356,24 @@ namespace impl
 		auto tweenEntry = std::find_if(tList->mTweens.begin(), tList->mTweens.end(),
 			[=](const tween<T>& tw){return tw.id == toRemove->id;});
 
-		tList->mTweens.erase(tweenEntry);
+		if(tweenEntry != tList->mTweens.end())
+			tList->mTweens.erase(tweenEntry);
 	}
 
 	/********************************************************************/
 	/** General namespace function implementation **/
 	/********************************************************************/
 
-	template<typename T>
-	tween<T>& to(float seconds, std::initializer_list<T*> ptrs, std::initializer_list<T> vals)
+	template<typename T1, typename T2>
+	tween<T1>& to(float seconds, std::initializer_list<T1*> ptrs, std::initializer_list<T2> vals)
 	{
 		return impl::internalGroup.to(seconds, ptrs, vals);
 	}
 
-	template<typename T>
-	auto to(float seconds, T* ptr, T val) -> decltype(to(seconds, {ptr}, {val}))
+	template<typename T1, typename T2>
+	tween<T1>& to(float seconds, T1* ptr, T2 val)
 	{
-		return to(seconds, {ptr}, {val});
+		return flux::to(seconds, {ptr}, {(T1)val});
 	}
 
 	inline void update(double deltaTime)
