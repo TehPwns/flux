@@ -182,6 +182,6 @@ namespace impl
 /* Hack to have the ability to define templates "outside"
  * the header
  */
-#include "../src/flux.cpp"
+#include "flux.cpp"
 
 #endif

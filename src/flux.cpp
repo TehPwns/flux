@@ -27,7 +27,7 @@ contact: p00n3dj002@yahoo.com
 #include <unordered_map>
 #include <math.h>
 #include <algorithm>
-#include "../include/flux.hpp"
+#include "flux.hpp"
 
 #ifndef M_PI
  #define M_PI    3.14159265358979323846
