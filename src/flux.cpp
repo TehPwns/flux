@@ -27,7 +27,7 @@ contact: p00n3dj002@yahoo.com
 #include <unordered_map>
 #include <math.h>
 #include <algorithm>
-#include "flux.hpp"
+#include "../include/flux.hpp"
 
 #ifndef M_PI
  #define M_PI    3.14159265358979323846
@@ -234,6 +234,21 @@ namespace impl
 		return parent->to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
 	}
 
+
+	template<typename T2>
+	tween<T>& tween<T>::after(float seconds, std::initializer_list<T2> vals)
+	{
+		auto& newTween = parent->to(seconds, {(T*)(nullptr)}, vals);
+		newTween.my_initPtrs = this->my_initPtrs;
+		return newTween;
+	}
+
+	template<typename T2>
+	tween<T>& tween<T>::after(float seconds, T2 vals)
+	{
+		return parent->to(seconds, this->my_initPtrs, vals);
+	}
+
 	template<typename T>
 	bool tween<T>::update(double deltaTime)
 	{
@@ -339,7 +354,15 @@ namespace impl
 			if(isTypeEmpty) {
 				auto remove_item = it;
 					--remove_item; 			//Delete node in list before it
-				delete remove_item->second;
+
+				/* The GenericTweenList needs to be explicitly cast or else
+				 * the incorrect destructor is called, resulting in a
+				 * memory leak. Double should work because the destructor is generic.
+				 */
+				auto typedTweenList =
+					reinterpret_cast<impl::TweenList<double>*>(remove_item->second);
+				delete typedTweenList;
+				
 				this->mTweensLists.erase(remove_item);
 			}
 		}

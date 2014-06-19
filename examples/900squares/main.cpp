@@ -196,7 +196,7 @@ void initializeTween7()
 	{
 		flux::to(0.10, &it->size, 8).ease("expoout")
 			.delay( (4.0/900.0) * std::distance(Sq900::squares.begin(), it) )
-			.after(0.75, &it->size, 1).ease("cubicout");
+			.after(0.75, 1).ease("cubicout");
 	}
 
 	//This tween does not start another, because both 7 and 8 are started by 6.
@@ -359,8 +359,7 @@ void initializeTween1()
 	/* Use Flux to create the tweens. Simple!
 	 * When this one finishes, start the next
 	 */
-	flux::to(1, &Sq900::introText_alpha, 255).delay(1)
-	  .after(1, &Sq900::introText_alpha, 0).delay(3)
+	flux::to(1, &Sq900::introText_alpha, 255.0).delay(1).after(1, 0.0).delay(3)
 	  .oncomplete(initializeTween2);
 }
 
@@ -430,4 +429,3 @@ int main()
 
 	return 0;
 }
-

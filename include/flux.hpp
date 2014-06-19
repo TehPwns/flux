@@ -86,6 +86,13 @@ namespace flux
 		template<typename T1, typename T2>
 		tween<T1>& after(float seconds, T1* ptr, T2 val);
 
+		template<typename T2>
+		tween<T>& after(float seconds, std::initializer_list<T2> vals);
+
+		template<typename T2>
+		tween<T>& after(float seconds, T2 vals);
+
+
 		bool update(double deltaTime);
 		void stop(void);
 
@@ -175,6 +182,6 @@ namespace impl
 /* Hack to have the ability to define templates "outside"
  * the header
  */
-#include "flux.cpp"
+#include "../src/flux.cpp"
 
 #endif
