@@ -5,34 +5,12 @@ https://github.com/rxi/flux
 
 Functionality
 =============
-Version 1.2
-
-**More type-generic; flux now works with different types as one might expect.**
-
- * The pointer and value in `to` and `after` don't have to explicitly be the same type.
- * ptrs in `after` don't have to be the same type as the previous tweens
- * Ensured all instances of using `to` use the correct one in context of possible scope errors
- * Using delay after `after` correctly adds delay instead of overwriting
- * typedef of callbackFn changed to std::function for flexibility
- * Added more friendly comments
+Version 1.2.5
+ * Functionality: Added ability to omit pointers from `after`. Doing so will create a tween on the previous variable. All `after` functions are also now inline.
+ * Fixed a possibility for memory leaks
 
 
-Version 1.1
- * Implemented tween::stop() 
- * scoped flux::easing enum
- 
-Version 1.0
- * Arrival of generalized `update` and `to` functions
- * Implemented tween groups
-
-Version 0.7
- * Corrected the single-variable functions.
- 
-Version 0.6
- * Fixed the sine tween being incorrect (Missing minus sign)
- * Correctly initialized tween before start when using "after"
- * Tween correctly takes delay into account when using "after"
-
+See CHANGELOG for full list of changes.
 
 How to use
 ==========
@@ -80,7 +58,7 @@ Either one of the `to` functions return a reference to the new tween object. Add
 
 `ease(const char* type)` `ease(flux::easing type)`: Sets the easing curve for the set of tweens being defined.
 
-`after(...)`: Register a tween to take place after the previous one finishes. All options after this apply to the new tween. This option uses the same syntax as `to`.
+`after(...)`: Register a tween to take place after the previous one finishes. All options after this apply to the new tween. This option uses the same syntax as `to`. `after(float sec, {vals} or val)` also provides the ability to omit new pointers from the function; this will create a tween on the previous variables to `val`.
 
 `onstart(callbackFn)`: Add a function to be called when the tween starts. Call more than once to add multiple functions. See format for a *callbackFn* above.
 
