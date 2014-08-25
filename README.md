@@ -5,9 +5,9 @@ https://github.com/rxi/flux
 
 Functionality
 =============
-Version 1.2.5
- * Functionality: Added ability to omit pointers from `after`. Doing so will create a tween on the previous variable. All `after` functions are also now inline.
- * Fixed a possibility for memory leaks
+Version 1.2.6
+ * Fixed mysterious errors that went undetected with `after` functions
+ * Makefiles added for examples
 
 
 See CHANGELOG for full list of changes.
