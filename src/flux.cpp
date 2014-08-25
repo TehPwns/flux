@@ -234,19 +234,26 @@ namespace impl
 		return parent->to(seconds, ptrs, vals).delay(start_delay + ((rate != 0) ? (1 / rate) : 0));
 	}
 
-
+	template<typename T>
 	template<typename T2>
 	tween<T>& tween<T>::after(float seconds, std::initializer_list<T2> vals)
 	{
-		auto& newTween = parent->to(seconds, {(T*)(nullptr)}, vals);
+		/* So, with these functions that don't specify pointers, because they are meant to be
+		 * on the same variables, what we want to do is first create a tween with pointers to nothing, 
+		 * then assign the new tween's pointers to that of this one's.
+		 */
+		auto& newTween = this->after(seconds, {(T*)(nullptr)}, vals);
 		newTween.my_initPtrs = this->my_initPtrs;
 		return newTween;
 	}
 
+	template<typename T>
 	template<typename T2>
-	tween<T>& tween<T>::after(float seconds, T2 vals)
+	tween<T>& tween<T>::after(float seconds, T2 val)
 	{
-		return parent->to(seconds, this->my_initPtrs, vals);
+		auto& newTween = this->after(seconds, {(T*)(nullptr)}, {(T)val});
+		newTween.my_initPtrs = this->my_initPtrs;
+		return newTween;
 	}
 
 	template<typename T>

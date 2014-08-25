@@ -90,7 +90,7 @@ namespace flux
 		tween<T>& after(float seconds, std::initializer_list<T2> vals);
 
 		template<typename T2>
-		tween<T>& after(float seconds, T2 vals);
+		tween<T>& after(float seconds, T2 val);
 
 
 		bool update(double deltaTime);
