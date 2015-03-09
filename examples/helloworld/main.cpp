@@ -30,6 +30,7 @@ int main()
 
 	
 	/* Let's use C's time functions because they are simple.
+	 * TODO: Fix timing on Linux
 	 */
 	clock_t now, prev;
 	now = clock();

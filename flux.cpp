@@ -328,7 +328,7 @@ namespace impl
 		 * and honestly isn't very good.
 		 */
 		New.id = tList->mTweens.size();
-		New.id |= ((int)((void*)&New) & 0xFFFF) << 16;
+		New.id |= ((long)((void*)&New) & 0xFFFF) << 16;
 
 		tList->mTweens.push_back(New);
 
