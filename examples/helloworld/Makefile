@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall -std=c++11 -I../../include -I../../src
+CFLAGS=-c -Wall -std=c++11 -I../../
 TARGET=helloflux
 
 #--------#
@@ -11,8 +11,8 @@ all: $(TARGET)
 $(TARGET): $(objects)
 	$(CC) $(objects) -o $(TARGET)
 
-flux.o: ../../src/flux.cpp
-	$(CC) $(CFLAGS) ../../src/flux.cpp
+flux.o: ../../flux.cpp
+	$(CC) $(CFLAGS) ../../flux.cpp
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp
 
