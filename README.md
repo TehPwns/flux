@@ -3,13 +3,6 @@ flux
 A C++ port and adaption of the flux tweening library for Lua. This project assumes the ISO C++11 standard and will not compile otherwise. For additional (better) documentation, see the original Lua documentation for flux at:
 https://github.com/rxi/flux
 
-Functionality
-=============
-Version 1.2.6
- * Fixed mysterious errors that went undetected with `after` functions
- * Makefiles added for examples
-
-
 See CHANGELOG for full list of changes.
 
 How to use
@@ -112,6 +105,12 @@ MyGroup.to(...);
 ...
 MyGroup.update(dt);
 ```
+
+Version
+=============
+Version 1.2.7
+ * Fixed a compilation error on some Linux machines
+ * Project is now single-folder
 
 ==========================================================================================
 

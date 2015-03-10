@@ -1,3 +1,7 @@
+Version 1.2.7
+ * Fixed a compilation error on some Linux machines
+ * Project is now single-folder
+
 Version 1.2.6
  * Fixed mysterious errors that went undetected with `after` functions
  * Makefiles added for examples
