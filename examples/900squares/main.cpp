@@ -359,8 +359,7 @@ void initializeTween1()
 	/* Use Flux to create the tweens. Simple!
 	 * When this one finishes, start the next
 	 */
-	flux::to(1, &Sq900::introText_alpha, 255.0).delay(1).after(1, 0.0).delay(3)
-	  .oncomplete(initializeTween2);
+	flux::to(1, &Sq900::introText_alpha, 255.0).delay(1).after(1, 0.0).delay(3).oncomplete(initializeTween2);
 }
 
 void drawIntroText(sf::RenderWindow& win)

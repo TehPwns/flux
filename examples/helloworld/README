@@ -1,0 +1,4 @@
+This is a basic example on how to use flux. A tween is created on one variable, and std::chrono functions are used for updating.
+The value tweens from 0 to 100 using "backinout" over 5 seconds.
+Lambdas can be used in place of defining functions, but for clarity they are omitted here.
+
